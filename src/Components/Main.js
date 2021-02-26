@@ -1,10 +1,10 @@
 import React from 'react'
-import WeatherSearch from './WeaherSearch'
+import WeaherSearch from './WeaherSearch'
 
 function Main() {
     return (
         <div>
-        <WeatherSearch />
+        <WeaherSearch />
             
         </div>
     )
