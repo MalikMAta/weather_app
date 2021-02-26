@@ -1,15 +1,16 @@
 // This will be the forum fields component that will allow the user to search for cities
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+import Weather from "./Weather";
+import axios from "axios";
 
 // Import all the components we will need from Material - UI
 import {
   Container,
   AppBar,
   Typography,
-  Grow,
   Grid,
-  IconButton,
   TextField,
   Button,
   Toolbar,
@@ -34,53 +35,78 @@ const useStyles = makeStyles({
   },
 });
 
+function WeaherSearch() {
+  const [city, setCity] = useState("");
+    const [weather, setWeather] = useState("")
+  const classes = useStyles();
 
-  import React from 'react'
-  
-  function WeaherSearch() {
-      return (
-        <>
-        {/* Create the first container for the top bar */}
-        <Container className={classes.root}>
-          <AppBar
-            position="static"
-            component="span"
-            m={1}
-            className={classes.root}
-          >
-            <Toolbar varient="dense">
-              <Typography variant="text">Weather Api App</Typography>
-            </Toolbar>
-          </AppBar>
-        </Container>
-        {/* Create the first container for the main section */}
-  
-        <Container className={classes.containerTwo}>
-          <Grid>
-            <Typography variant="h1" component="h1" className={classes.title}>
-              Enter a city to check the weather
-            </Typography>
-  
-            <Grid>
-              <form noValidate autoComplete="off">
-                <TextField
-                  id="filled-secondary"
-                  label="Weather checker"
-                  color="secondary"
-                />
-              </form>
-            </Grid>
-            <Grid className={classes.gridTwo}>
-              <Button variant="contained" color="primary">
-                Submit
-              </Button>
-            </Grid>
-          </Grid>
-        </Container>
-      </>
+  const converterForumula = (data) => {
+    const newData = ((data - 273.15) * 9) / 5 + 32;
+    console.log(newData)
+    return newData
+    // return data − 273.15) × 9/5 + 32
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+
+    // Call the api using axios 
+    axios
+      .get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=2ef83a8b42392109d4cc4d35fac1fdde`
       )
-  }
-  
-  
-  export default WeaherSearch
-  
+      .then((res) => {
+        const persons = res.data;
+        const weather = persons.main.feels_like;
+        console.log(weather);
+
+        // call the formula to convert the weather
+        converterForumula(weather)
+        setWeather( converterForumula(weather))
+      });
+  };
+
+  return (
+    <>
+      {/* Create the first container for the top bar */}
+      <Container className={classes.root}>
+        <AppBar
+          position="static"
+          component="span"
+          m={1}
+          className={classes.root}
+        >
+          <Toolbar varient="dense">
+            <Typography variant="text">Weather Api App</Typography>
+          </Toolbar>
+        </AppBar>
+      </Container>
+
+      <form onSubmit={handleSubmit} className="white">
+        <h5 className="grey-text text-darken-3">Sign in</h5>
+
+        <div className="input-feild">
+          <label htmlFor="email">Email</label>
+          <input
+            type="text"
+            id="city"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+          />
+        </div>
+
+        <div className="input-field">
+          <button className="btn pink lighten-1 z-depth-0">Login</button>
+        </div>
+      </form>
+
+    
+        {/* Send the weather information through a prop */}
+      <Container>
+        <Weather weather={weather} />
+      </Container>
+    </>
+  );
+}
+
+export default WeaherSearch;
