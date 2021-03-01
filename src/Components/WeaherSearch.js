@@ -1,112 +1,93 @@
 // This will be the forum fields component that will allow the user to search for cities
 
 import React, { useState, useEffect } from "react";
+import styles from "./mystyle.module.css";
 
 import Weather from "./Weather";
 import axios from "axios";
 
-// Import all the components we will need from Material - UI
-import {
-  Container,
-  AppBar,
-  Typography,
-  Grid,
-  TextField,
-  Button,
-  Toolbar,
-} from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
-
-//Setting up he styles I want to use with materialize UI
-const useStyles = makeStyles({
-  root: {
-    height: "75x",
-    color: "white",
-  },
-  title: {
-    color: "black",
-    fontSize: "30px",
-  },
-  gridTwo: {
-    marginTop: "10px",
-  },
-  containerTwo: {
-    marginTop: "100px",
-  },
-});
-
-function WeaherSearch() {
+function WeaherSearch(props) {
   const [city, setCity] = useState("");
-    const [weather, setWeather] = useState("")
-  const classes = useStyles();
 
-  const converterForumula = (data) => {
-    const newData = ((data - 273.15) * 9) / 5 + 32;
-    console.log(newData)
-    return newData
-    // return data − 273.15) × 9/5 + 32
+  const [long, setLong] = useState("");
+  const [lat, setlat] = useState("");
+
+  // const[information, setInformation] = useState([{feels_like: "",humidity : "", temp: "" , visibility: "", sunrise: "", sunset: "", skyDescription : "", }])
+  const[ daily, setDaily] =useState()
+  const WeatherDetailReport = (location) => {
+    // Call the api using axios
+    axios
+      .get("https://maps.googleapis.com/maps/api/geocode/json", {
+        params: {
+          address: city,
+          key: "AIzaSyAuOrEiHZBJcOOOKjdNR67N7QTtKPeJ4sk",
+        },
+      })
+      .then((res) => {
+        //  console.log(res.data.results[0].geometry.location.lat)
+        setlat(res.data.results[0].geometry.location.lat);
+        setLong(res.data.results[0].geometry.location.lng);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
+
+  if(city){
+  WeatherDetailReport(city);
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
 
-
-    // Call the api using axios 
     axios
       .get(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=2ef83a8b42392109d4cc4d35fac1fdde`
+        // `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=2ef83a8b42392109d4cc4d35fac1fdde`
+        `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${long}&exclude={}&appid=2ef83a8b42392109d4cc4d35fac1fdde`
       )
       .then((res) => {
-        const persons = res.data;
-        const weather = persons.main.feels_like;
-        console.log(weather);
+        console.log(res);
 
-        // call the formula to convert the weather
-        converterForumula(weather)
-        setWeather( converterForumula(weather))
+        const dailyData = res.data.daily
+        setDaily(dailyData)
       });
   };
 
   return (
     <>
-      {/* Create the first container for the top bar */}
-      <Container className={classes.root}>
-        <AppBar
-          position="static"
-          component="span"
-          m={1}
-          className={classes.root}
-        >
-          <Toolbar varient="dense">
-            <Typography variant="text">Weather Api App</Typography>
-          </Toolbar>
-        </AppBar>
-      </Container>
-
-      <form onSubmit={handleSubmit} className="white">
-        <h5 className="grey-text text-darken-3">Sign in</h5>
-
-        <div className="input-feild">
-          <label htmlFor="email">Email</label>
-          <input
-            type="text"
-            id="city"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-          />
+      <div className="container">
+        <div className={styles.headerRow} className="row">
+          <div className="col s12" className={styles.title}>
+            <h5>Choose a city to check the current Weather</h5>
+          </div>
         </div>
 
-        <div className="input-field">
-          <button className="btn pink lighten-1 z-depth-0">Login</button>
-        </div>
-      </form>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className="row">
+            <div className="col s12 " className={styles.cityText}>
+              <label htmlFor="City">City</label>
+              <input
+                type="text"
+                id="city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              />
+            </div>
 
-    
-        {/* Send the weather information through a prop */}
-      <Container>
-        <Weather weather={weather} />
-      </Container>
+            <div>
+              <button className="btn waves-effect waves-light btn-small">
+                Submit
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div className="container">
+        <Weather daily = {daily} />
+      </div>
     </>
   );
 }
-
 export default WeaherSearch;
